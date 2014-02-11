@@ -12,9 +12,7 @@ import static play.test.Helpers.running;
 
 import java.util.UUID;
 
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.node.ObjectNode;
-import org.json.JSONArray;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Test;

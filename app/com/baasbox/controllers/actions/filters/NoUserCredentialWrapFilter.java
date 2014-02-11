@@ -17,6 +17,7 @@
 package com.baasbox.controllers.actions.filters;
 
 import play.Logger;
+import play.libs.F;
 import play.mvc.Action;
 import play.mvc.Http;
 import play.mvc.Http.Context;
@@ -24,25 +25,26 @@ import play.mvc.Result;
 
 import com.baasbox.BBConfiguration;
 import com.baasbox.security.SessionKeys;
+import play.mvc.SimpleResult;
 
 public class NoUserCredentialWrapFilter extends Action.Simple {
 
 
 	@Override
-	public Result call(Context ctx) throws Throwable {
+	public F.Promise<SimpleResult> call(Context ctx) throws Throwable {
 		if (Logger.isTraceEnabled()) Logger.trace("Method Start");
 		Http.Context.current.set(ctx);
 		
 		if (Logger.isDebugEnabled()) Logger.debug("NoUserCredentialWrapFilter  for resource " + Http.Context.current().request());
 		
 		//executes the request
-		Result tempResult = delegate.call(ctx);
+		SimpleResult tempResult = delegate.call(ctx).get(10000);
 
 		WrapResponse wr = new WrapResponse();
-		Result result=wr.wrap(ctx, tempResult);
+		SimpleResult result=wr.wrap(ctx, tempResult);
 				
 		if (Logger.isTraceEnabled()) Logger.trace("Method End");
-	    return result;
+	    return F.Promise.pure(result);
 	}
 
 }

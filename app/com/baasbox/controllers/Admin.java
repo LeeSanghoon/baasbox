@@ -41,7 +41,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.comparator.LastModifiedFileComparator;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.codehaus.jackson.JsonNode;
+import com.fasterxml.jackson.databind.JsonNode;
 
 import play.Logger;
 import play.Play;
@@ -228,7 +228,7 @@ public class Admin extends Controller {
 		String description="";
 		JsonNode json = request().body().asJson();
 		if(json != null) {
-			description = Objects.firstNonNull(json.findPath("description").getTextValue(),"");
+			description = Objects.firstNonNull(json.findPath("description").textValue(),"");
 		}
 		try {
 			RoleService.createRole(name, inheritedRole, description);
@@ -257,8 +257,8 @@ public class Admin extends Controller {
 		String newName="";
 		JsonNode json = request().body().asJson();
 		if(json != null) {
-			description = json.findPath("description").getTextValue();
-			newName = json.findPath("new_name").getTextValue();
+			description = json.findPath("description").textValue();
+			newName = json.findPath("new_name").textValue();
 		}
 		try {
 			RoleService.editRole(name, null, description,newName);
@@ -440,7 +440,7 @@ public class Admin extends Controller {
 
 	/***
 	 * Change password of a specific user
-	 * @param name of user
+	 * @param username name of user
 	 * @return 
 	 * @throws UserNotFoundException 
 	 * @throws SqlInjectionException 
@@ -881,7 +881,7 @@ public class Admin extends Controller {
 	 * DELETE /admin/follow/:follower/to/:tofollow
 	 * Delete a follow relationship beetwen user follower and user to follow
 	 * @param follower
-	 * @param toFollow
+	 * @param theFollowed
 	 * @return
 	 */
 	public static Result removeFollowRelationship(String follower,String theFollowed){

@@ -17,7 +17,6 @@
 
 // @author: Marco Tibuzzi
 
-import static org.junit.Assert.fail;
 import static play.mvc.Http.Status.BAD_REQUEST;
 import static play.mvc.Http.Status.UNAUTHORIZED;
 import static play.test.Helpers.HTMLUNIT;
@@ -35,9 +34,8 @@ import java.util.UUID;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.node.ObjectNode;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -155,7 +153,7 @@ public class UserCreateTest extends AbstractUserTest
 					assertRoute(result, "routeCreateUser", Status.CREATED, null, false);
 					String body = play.test.Helpers.contentAsString(result);
 					JsonNode jsonRes = Json.parse(body);
-					String token = jsonRes.get("data").get(SessionKeys.TOKEN.toString()).getTextValue();
+					String token = jsonRes.get("data").get(SessionKeys.TOKEN.toString()).textValue();
 					Assert.assertNotNull(token);
 					Assert.assertFalse(SessionTokenProvider.getSessionTokenProvider().getSession(token).isEmpty());
 					
@@ -292,7 +290,7 @@ public class UserCreateTest extends AbstractUserTest
 					assertRoute(result, "routeCreateUser_2", Status.CREATED, null, false);
 					String body = play.test.Helpers.contentAsString(result);
 					JsonNode jsonRes = Json.parse(body);
-					String token = jsonRes.get("data").get(SessionKeys.TOKEN.toString()).getTextValue();
+					String token = jsonRes.get("data").get(SessionKeys.TOKEN.toString()).textValue();
 					
 					//test if the user can execute a GET on himself
 					request = new FakeRequest(GET, getRouteAddress());

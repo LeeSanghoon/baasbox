@@ -6,7 +6,7 @@ import static play.test.Helpers.running;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.codehaus.jackson.JsonNode;
+import com.fasterxml.jackson.core.JsonNode;
 import org.junit.Assert;
 import org.junit.Test;
 

@@ -9,12 +9,11 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.JsonProcessingException;
-import org.codehaus.jackson.map.ObjectMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.baasbox.configuration.ImagesConfiguration;
-import com.baasbox.controllers.CustomHttpCode;
 import com.baasbox.dao.FileDao;
 import com.baasbox.dao.PermissionsHelper;
 import com.baasbox.dao.RoleDao;
@@ -31,7 +30,6 @@ import com.baasbox.exception.RoleNotFoundException;
 import com.baasbox.exception.UserNotFoundException;
 import com.baasbox.service.storage.StorageUtils.ImageDimensions;
 import com.baasbox.service.storage.StorageUtils.WritebleImageFormat;
-import com.baasbox.service.user.RoleService;
 import com.baasbox.service.user.UserService;
 import com.baasbox.util.QueryParams;
 import com.orientechnologies.orient.core.metadata.security.ORole;
@@ -81,7 +79,7 @@ public class FileService {
 			}catch(JsonProcessingException e){
 				throw e;
 			}
-			Iterator<Entry<String, JsonNode>> itAction = aclJson.getFields(); //read,update,delete
+			Iterator<Entry<String, JsonNode>> itAction = aclJson.fields(); //read,update,delete
 			while (itAction.hasNext()){
 				Entry<String, JsonNode> nextAction = itAction.next();
 				String action = nextAction.getKey();
@@ -95,7 +93,7 @@ public class FileService {
 				else if (action.equalsIgnoreCase("all"))
 					actionPermission=Permissions.FULL_ACCESS;
 				
-				Iterator<Entry<String, JsonNode>> itUsersRoles = nextAction.getValue().getFields();
+				Iterator<Entry<String, JsonNode>> itUsersRoles = nextAction.getValue().fields();
 
 				while (itUsersRoles.hasNext()){
 					 Entry<String, JsonNode> usersOrRoles = itUsersRoles.next();

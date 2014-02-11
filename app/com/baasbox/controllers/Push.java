@@ -1,20 +1,12 @@
 package com.baasbox.controllers;
 
 import java.io.IOException;
-import java.net.NoRouteToHostException;
-import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
 
-import org.apache.commons.lang.exception.ExceptionUtils;
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.node.ObjectNode;
+import com.fasterxml.jackson.databind.JsonNode;
 
 import play.Logger;
-import play.libs.Json;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Http;
@@ -22,20 +14,14 @@ import play.mvc.Result;
 import play.mvc.With;
 
 import com.baasbox.controllers.actions.filters.ConnectToDBFilter;
-import com.baasbox.controllers.actions.filters.NoUserCredentialWrapFilter;
 import com.baasbox.controllers.actions.filters.UserCredentialWrapFilter;
-import com.baasbox.controllers.actions.filters.WrapResponse;
 import com.baasbox.dao.UserDao;
 import com.baasbox.dao.exception.SqlInjectionException;
 import com.baasbox.exception.UserNotFoundException;
-import com.baasbox.security.SessionKeys;
-import com.baasbox.security.SessionTokenProvider;
 import com.baasbox.service.push.PushService;
 import com.baasbox.service.push.providers.PushNotInitializedException;
 import com.baasbox.service.user.UserService;
 import com.google.android.gcm.server.InvalidRequestException;
-import com.google.common.collect.ImmutableMap;
-import com.orientechnologies.orient.core.record.impl.ODocument;
 
 @With ({UserCredentialWrapFilter.class,ConnectToDBFilter.class})
 @BodyParser.Of(BodyParser.Json.class)

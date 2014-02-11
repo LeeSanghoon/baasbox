@@ -17,6 +17,7 @@
 package com.baasbox.controllers.actions.filters;
 
 import play.Logger;
+import play.libs.F;
 import play.mvc.Action;
 import play.mvc.Http;
 import play.mvc.Http.Context;
@@ -24,6 +25,7 @@ import play.mvc.Result;
 
 import com.baasbox.BBConfiguration;
 import com.baasbox.IBBConfigurationKeys;
+import play.mvc.SimpleResult;
 
 /**
  * Inject the admin credentials into the args argument
@@ -35,8 +37,8 @@ public class AdminCredentialWrapFilter extends Action.Simple {
 
 
 	@Override
-	public Result call(Context ctx) throws Throwable {
-		Result tempResult=null;
+	public F.Promise<SimpleResult> call(Context ctx) throws Throwable {
+        SimpleResult tempResult=null;
 		if (Logger.isTraceEnabled())  Logger.trace("Method Start");
 		Http.Context.current.set(ctx);
 		
@@ -66,15 +68,15 @@ public class AdminCredentialWrapFilter extends Action.Simple {
 		
 		//executes the request
 		if (tempResult==null){
-			tempResult = delegate.call(ctx);
+			tempResult = delegate.call(ctx).get(10000);
 		}
 
 		WrapResponse wr = new WrapResponse();
-		Result result=wr.wrap(ctx, tempResult);
+        SimpleResult result=wr.wrap(ctx, tempResult);
 		
 		
 		if (Logger.isTraceEnabled()) Logger.trace("Method End");
-	    return result;
+	    return F.Promise.pure(result);
 	}
 
 }

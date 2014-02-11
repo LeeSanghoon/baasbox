@@ -17,18 +17,20 @@
 package com.baasbox.controllers.actions.filters;
 
 import play.Logger;
+import play.libs.F;
 import play.mvc.Action;
 import play.mvc.Http;
 import play.mvc.Http.Context;
 import play.mvc.Result;
 
 import com.baasbox.BBConfiguration;
+import play.mvc.SimpleResult;
 
 public class AnonymousLogin extends Action.Simple {
 
 
 	@Override
-	public Result call(Context ctx) throws Throwable {
+	public F.Promise<SimpleResult> call(Context ctx) throws Throwable {
 		if (Logger.isTraceEnabled()) Logger.trace("Method Start");
 		Http.Context.current.set(ctx);
 		

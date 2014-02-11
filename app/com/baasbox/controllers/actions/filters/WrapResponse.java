@@ -19,9 +19,9 @@ package com.baasbox.controllers.actions.filters;
 import java.io.IOException;
 
 import org.apache.commons.lang.StringUtils;
-import org.codehaus.jackson.JsonProcessingException;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.node.ObjectNode;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import play.Logger;
 import play.api.mvc.ChunkedResult;
@@ -34,13 +34,14 @@ import play.mvc.Results;
 
 import com.baasbox.BBConfiguration;
 import com.baasbox.controllers.CustomHttpCode;
+import play.mvc.SimpleResult;
 
 
 public class WrapResponse {
 
 	
 	private ObjectNode prepareError(RequestHeader request, String error) {
-		org.codehaus.jackson.map.ObjectMapper mapper = new org.codehaus.jackson.map.ObjectMapper();
+		com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
 		ObjectNode result = Json.newObject();
 		result.put("result", "error");
 		result.put("message", error);
@@ -53,7 +54,7 @@ public class WrapResponse {
 	} 
 
 	
-	private Result onCustomCode(int statusCode, RequestHeader request, String data) throws IOException {
+	private SimpleResult onCustomCode(int statusCode, RequestHeader request, String data) throws IOException {
 		CustomHttpCode customCode = CustomHttpCode.getFromBbCode(statusCode);
 		ObjectNode result=null;
 		if (customCode.getType().equals("error")){
@@ -63,38 +64,38 @@ public class WrapResponse {
 		}
 		result.put("http_code", customCode.getHttpCode());
 		result.put("bb_code", String.valueOf(customCode.getBbCode()));
-		return Results.status(customCode.getHttpCode(), result);	
+		return Results.status(customCode.getHttpCode(), result);
 	}
 	
 	
-	private Result onUnauthorized(RequestHeader request, String error) {
+	private SimpleResult onUnauthorized(RequestHeader request, String error) {
 		  ObjectNode result = prepareError(request, error);
 		  result.put("http_code", 401);
 		   return Results.unauthorized(result);
 		  
 	}  
 	  
-	private Result onForbidden(RequestHeader request, String error) {
+	private SimpleResult onForbidden(RequestHeader request, String error) {
 		  ObjectNode result = prepareError(request, error);
 		  result.put("http_code", 403);
 		  return Results.forbidden(result);
 	}
 	  
-	private Result onBadRequest(RequestHeader request, String error) {
+	private SimpleResult onBadRequest(RequestHeader request, String error) {
 		  ObjectNode result = prepareError(request, error);
 		  return  Results.badRequest(result);
 		  
 	} 
 	
   
-    private Result onResourceNotFound(RequestHeader request,String error) {
+    private SimpleResult onResourceNotFound(RequestHeader request,String error) {
 		  ObjectNode result = prepareError(request, error);
 		  result.put("http_code", 404);
 		  return Results.notFound(result);
 		  
     }
     
-    private Result onDefaultError(int statusCode,RequestHeader request,String error) {
+    private SimpleResult onDefaultError(int statusCode,RequestHeader request,String error) {
 		  ObjectNode result = prepareError(request, error);
 		  result.put("http_code", statusCode);
 		  return  Results.status(statusCode,result);
@@ -126,13 +127,13 @@ public class WrapResponse {
 		if (!StringUtils.isEmpty(callId)) result.put("call_id",callId);
 	}
     
-	private Result onOk(int statusCode,RequestHeader request, String stringBody) throws IOException  {
+	private SimpleResult onOk(int statusCode,RequestHeader request, String stringBody) throws IOException  {
 		ObjectNode result = prepareOK(statusCode, request, stringBody);
 		result.put("http_code", statusCode);
 		return Results.status(statusCode,result); 
 	}
 
-	public Result wrap(Context ctx, Result result) throws Throwable {
+	public SimpleResult wrap(Context ctx, SimpleResult result) throws Throwable {
 		if (Logger.isTraceEnabled()) Logger.trace("Method Start");
 		
 		ctx.response().setHeader("Access-Control-Allow-Origin", "*");
@@ -144,7 +145,7 @@ public class WrapResponse {
 	    byte[] resultContent=null;
 		if (BBConfiguration.getWrapResponse()){
 			if (Logger.isDebugEnabled()) Logger.debug("Wrapping the response");
-			final int statusCode = JavaResultExtractor.getStatus(result);
+			final int statusCode = result.getWrappedSimpleResult().header().status();
 			if (Logger.isDebugEnabled()) Logger.debug("Executed API: "  + ctx.request() + " , return code " + statusCode);
 			if (Logger.isDebugEnabled()) Logger.debug("Result type:"+result.getWrappedResult().getClass().getName() + " Response Content-Type:" +ctx.response().getHeaders().get("Content-Type"));
 			if (ctx.response().getHeaders().get("Content-Type")!=null 

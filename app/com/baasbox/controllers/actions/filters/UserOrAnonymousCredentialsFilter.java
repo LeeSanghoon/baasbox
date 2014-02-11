@@ -19,6 +19,7 @@ package com.baasbox.controllers.actions.filters;
 import org.apache.commons.lang.StringUtils;
 
 import play.Logger;
+import play.libs.F;
 import play.mvc.Action;
 import play.mvc.Http;
 import play.mvc.Http.Context;
@@ -27,6 +28,7 @@ import play.mvc.Result;
 import com.baasbox.BBConfiguration;
 import com.baasbox.controllers.CustomHttpCode;
 import com.baasbox.security.SessionKeys;
+import play.mvc.SimpleResult;
 
 /**
  * This Filter checks if user credentials are present in the request and injects
@@ -39,9 +41,9 @@ import com.baasbox.security.SessionKeys;
 public class UserOrAnonymousCredentialsFilter extends Action.Simple {
 
 	@Override
-	public Result call(Context ctx) throws Throwable {
+	public F.Promise<SimpleResult> call(Context ctx) throws Throwable {
 		if (Logger.isTraceEnabled()) Logger.trace("Method Start");
-		Result tempResult = null;
+        SimpleResult tempResult = null;
 		Http.Context.current.set(ctx);
 		String token = ctx.request().getHeader(SessionKeys.TOKEN.toString());
 		if (StringUtils.isEmpty(token)) token = ctx.request().getQueryString(SessionKeys.TOKEN.toString());
@@ -102,15 +104,15 @@ public class UserOrAnonymousCredentialsFilter extends Action.Simple {
 			// if everything is ok.....
 			// executes the request
 			if (tempResult == null)
-				tempResult = delegate.call(ctx);
+				tempResult = delegate.call(ctx).get(10000);
 		}
 
 		WrapResponse wr = new WrapResponse();
-		Result result = wr.wrap(ctx, tempResult);
+        SimpleResult result = wr.wrap(ctx, tempResult);
 
 		if (Logger.isDebugEnabled()) Logger.debug(result.toString());
 		if (Logger.isTraceEnabled()) Logger.trace("Method End");
-		return result;
+		return F.Promise.pure(result);
 	}
 
 }

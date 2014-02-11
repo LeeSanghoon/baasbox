@@ -19,6 +19,7 @@ package com.baasbox.controllers.actions.filters;
 import java.util.Set;
 
 import play.Logger;
+import play.libs.F;
 import play.mvc.Action;
 import play.mvc.Http;
 import play.mvc.Http.Context;
@@ -29,12 +30,13 @@ import com.baasbox.db.DbHelper;
 import com.baasbox.enumerations.DefaultRoles;
 import com.orientechnologies.orient.core.metadata.security.ORole;
 import com.orientechnologies.orient.core.metadata.security.OUser;
+import play.mvc.SimpleResult;
 
 
 public class CheckAdminRoleFilter extends Action.Simple{
 
 	@Override
-	public Result call(Context ctx) throws Throwable {
+	public F.Promise<SimpleResult> call(Context ctx) throws Throwable {
 		if (Logger.isTraceEnabled()) Logger.trace("Method Start");
 		Http.Context.current.set(ctx);
 		
@@ -43,11 +45,14 @@ public class CheckAdminRoleFilter extends Action.Simple{
 		
 		OUser user=DbHelper.getConnection().getUser();
 		Set<ORole> roles=user.getRoles();
-		
-		Result result=null;
+
+        F.Promise<SimpleResult> result=null;
 		if (roles.contains(RoleDao.getRole(DefaultRoles.ADMIN.toString()))){
 			result = delegate.call(ctx);
-		}else result=forbidden("User " + ctx.args.get("username") + " is not an administrator");
+		}else {
+            SimpleResult simpleResult=forbidden("User " + ctx.args.get("username") + " is not an administrator");
+            result = F.Promise.pure(simpleResult);
+        }
 		if (Logger.isTraceEnabled()) Logger.trace("Method End");
 		return result;
 	}

@@ -23,12 +23,10 @@ import static play.mvc.Results.badRequest;
 import static play.mvc.Results.internalServerError;
 import static play.mvc.Results.notFound;
 
-import java.io.UnsupportedEncodingException;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.node.ObjectNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import play.Application;
 import play.Configuration;
@@ -37,9 +35,10 @@ import play.Logger;
 import play.Play;
 import play.api.mvc.EssentialFilter;
 import play.core.j.JavaResultExtractor;
+import play.libs.F;
 import play.libs.Json;
 import play.mvc.Http.RequestHeader;
-import play.mvc.Result;
+import play.mvc.SimpleResult;
 
 import com.baasbox.configuration.Internal;
 import com.baasbox.configuration.IosCertificateHandler;
@@ -53,29 +52,29 @@ import com.orientechnologies.orient.core.db.document.ODatabaseDocumentPool;
 import com.orientechnologies.orient.core.db.graph.OGraphDatabase;
 import com.orientechnologies.orient.core.db.record.ODatabaseRecordTx;
 import com.orientechnologies.orient.core.exception.ODatabaseException;
-import com.typesafe.config.ConfigException;
+
 
 public class Global extends GlobalSettings {
 	
-	  private static Boolean  justCreated = false;
+	private static Boolean  justCreated = false;
 
 
 	@Override
-	  public void beforeStart(Application app) {
-		  info("BaasBox is starting...");
-		  info("System details:");
-		  info(StatisticsService.os().toString());
-		  info(StatisticsService.memory().toString());
-		  info(StatisticsService.java().toString());
-		  if (Boolean.parseBoolean(app.configuration().getString(BBConfiguration.DUMP_DB_CONFIGURATION_ON_STARTUP))) info(StatisticsService.db().toString());
-		 
-		  info("...Loading plugin...");
-	  }
-	  
-	  @Override
-	  public Configuration onLoadConfig(Configuration config,
-          java.io.File path,
-          java.lang.ClassLoader classloader){  
+	public void beforeStart(Application app) {
+		info("BaasBox is starting...");
+		info("System details:");
+		info(StatisticsService.os().toString());
+		info(StatisticsService.memory().toString());
+		info(StatisticsService.java().toString());
+		if (Boolean.parseBoolean(app.configuration().getString(BBConfiguration.DUMP_DB_CONFIGURATION_ON_STARTUP))) info(StatisticsService.db().toString());
+
+		info("...Loading plugin...");
+	}
+
+	@Override
+	public Configuration onLoadConfig(Configuration config,
+        java.io.File path,
+        java.lang.ClassLoader classloader){
 		  debug("Global.onLoadConfig() called");
 		  info("BaasBox is preparing OrientDB Embedded Server...");
 		  try{
@@ -121,16 +120,16 @@ public class Global extends GlobalSettings {
 		    }
 		  debug("Global.onLoadConfig() ended");
 		  return config;
-	  }
-	  
-	  @Override
-	  public void onStart(Application app) {
-		 debug("Global.onStart() called");
-	    //Orient.instance().shutdown();
+	}
 
-	    ODatabaseRecordTx db =null;
-	    try{
-	    	if (justCreated){
+	@Override
+	public void onStart(Application app) {
+		 debug("Global.onStart() called");
+	  //Orient.instance().shutdown();
+
+	  ODatabaseRecordTx db =null;
+	  try{
+	  	if (justCreated){
 		    	try {
 		    		//we MUST use admin/admin because the db was just created
 		    		db = DbHelper.open( BBConfiguration.getAPPCODE(),"admin", "admin");
@@ -146,12 +145,12 @@ public class Global extends GlobalSettings {
 		    		if (db!=null && !db.isClosed()) db.close();
 		    	}
 		    	justCreated=false;
-	    	}
-	    }catch (Throwable e){
-	    	error("!! Error initializing BaasBox!", e);
-	    	error("Abnormal BaasBox termination.");
-	    	System.exit(-1);
-	    }
+	  	}
+	  }catch (Throwable e){
+	  	error("!! Error initializing BaasBox!", e);
+	  	error("Abnormal BaasBox termination.");
+	  	System.exit(-1);
+	  }
     	info("Updating default users passwords...");
     	try {
     		db = DbHelper.open( BBConfiguration.getAPPCODE(), BBConfiguration.getBaasBoxAdminUsername(), BBConfiguration.getBaasBoxAdminPassword());
@@ -162,9 +161,9 @@ public class Global extends GlobalSettings {
 			if (bbid==null) throw new Exception ("Unique id not found! Hint: could the DB be corrupted?");
 			info ("BaasBox unique id is " + bbid);
 		} catch (Exception e) {
-	    	error("!! Error initializing BaasBox!", e);
-	    	error("Abnormal BaasBox termination.");
-	    	System.exit(-1);
+	  	error("!! Error initializing BaasBox!", e);
+	  	error("Abnormal BaasBox termination.");
+	  	System.exit(-1);
 		} finally {
     		if (db!=null && !db.isClosed()) db.close();
     	}
@@ -173,48 +172,48 @@ public class Global extends GlobalSettings {
     		db = DbHelper.open( BBConfiguration.getAPPCODE(), BBConfiguration.getBaasBoxAdminUsername(), BBConfiguration.getBaasBoxAdminPassword());
     		IosCertificateHandler.init();
     	}catch (Exception e) {
-	    	error("!! Error initializing BaasBox!", e);
-	    	error("Abnormal BaasBox termination.");
-	    	System.exit(-1);
+	  	error("!! Error initializing BaasBox!", e);
+	  	error("Abnormal BaasBox termination.");
+	  	System.exit(-1);
 		} finally {
     		if (db!=null && !db.isClosed()) db.close();
     	}
     	info ("...done");
-	    info("BaasBox is Ready.");
-	    String port=Play.application().configuration().getString("http.port");
-	    if (port==null) port="9000";
-	    String address=Play.application().configuration().getString("http.address");
-	    if (address==null) address="localhost";
-	    
-	    info("");
-	    info("To login into the amministration console go to http://" + address +":" + port + "/console");
-	    info("Default credentials are: user:admin pass:admin AppCode: 1234567890");
-	    info("Documentation is available at http://www.baasbox.com/documentation");
+	  info("BaasBox is Ready.");
+	  String port=Play.application().configuration().getString("http.port");
+	  if (port==null) port="9000";
+	  String address=Play.application().configuration().getString("http.address");
+	  if (address==null) address="localhost";
+
+	  info("");
+	  info("To login into the amministration console go to http://" + address +":" + port + "/console");
+	  info("Default credentials are: user:admin pass:admin AppCode: 1234567890");
+	  info("Documentation is available at http://www.baasbox.com/documentation");
 		debug("Global.onStart() ended"); 
-	  }
-	  
-	  
-	  
-	  @Override
-	  public void onStop(Application app) {
+	}
+
+
+
+	@Override
+	public void onStop(Application app) {
 		debug("Global.onStop() called");
-	    info("BaasBox is shutting down...");
-	    try{
-	    	info("Closing the DB connections...");
-	    	ODatabaseDocumentPool.global().close();
-	    	info("Shutting down embedded OrientDB Server");
-	    	Orient.instance().shutdown();
-	    	info("...ok");
-	    }catch (ODatabaseException e){
-	    	error("Error closing the DB!",e);
-	    }catch (Throwable e){
-	    	error("!! Error shutting down BaasBox!", e);
-	    }
-	    info("Destroying session manager...");
-	    SessionTokenProvider.destroySessionTokenProvider();
-	    info("...BaasBox has stopped");
+	  info("BaasBox is shutting down...");
+	  try{
+	  	info("Closing the DB connections...");
+	  	ODatabaseDocumentPool.global().close();
+	  	info("Shutting down embedded OrientDB Server");
+	  	Orient.instance().shutdown();
+	  	info("...ok");
+	  }catch (ODatabaseException e){
+	  	error("Error closing the DB!",e);
+	  }catch (Throwable e){
+	  	error("!! Error shutting down BaasBox!", e);
+	  }
+	  info("Destroying session manager...");
+	  SessionTokenProvider.destroySessionTokenProvider();
+	  info("...BaasBox has stopped");
 		debug("Global.onStop() ended");
-	  }  
+	}
 	  
 	private void setCallIdOnResult(RequestHeader request, ObjectNode result) {
 		String callId = request.getQueryString("call_id");
@@ -235,51 +234,50 @@ public class Global extends GlobalSettings {
 	} 
 		
 	  @Override
-	  public Result onBadRequest(RequestHeader request, String error) {
+	  public F.Promise<SimpleResult> onBadRequest(RequestHeader request, String error) {
 		  ObjectNode result = prepareError(request, error);
 		  result.put("http_code", 400);
-		  Result resultToReturn =  badRequest(result);
+          SimpleResult resultToReturn =  badRequest(result);
 		  try {
 			if (Logger.isDebugEnabled()) Logger.debug("Global.onBadRequest:\n  + result: \n" + result.toString() + "\n  --> Body:\n" + new String(JavaResultExtractor.getBody(resultToReturn),"UTF-8"));
 		  }finally{
-			  return resultToReturn;
+			  return F.Promise.pure(resultToReturn);
 		  }
 	  }  
 
 	// 404
 	  @Override
-	    public Result onHandlerNotFound(RequestHeader request) {
+	    public F.Promise<SimpleResult> onHandlerNotFound(RequestHeader request) {
 		  debug("API not found: " + request.method() + " " + request);
 		  ObjectNode result = prepareError(request, "API not found");
 		  result.put("http_code", 404);
-		  Result resultToReturn= notFound(result);
+          SimpleResult resultToReturn= notFound(result);
 		  try {
 			  if (Logger.isDebugEnabled()) Logger.debug("Global.onBadRequest:\n  + result: \n" + result.toString() + "\n  --> Body:\n" + new String(JavaResultExtractor.getBody(resultToReturn),"UTF-8"));
 		  }finally{
-			  return resultToReturn;
+			  return F.Promise.pure(resultToReturn);
 		  }
 	    }
 
 	  // 500 - internal server error
 	  @Override
-	  public Result onError(RequestHeader request, Throwable throwable) {
+	  public F.Promise<SimpleResult> onError(RequestHeader request, Throwable throwable) {
 		  error("INTERNAL SERVER ERROR: " + request.method() + " " + request);
 		  ObjectNode result = prepareError(request, throwable.getMessage());
 		  result.put("http_code", 500);
 		  result.put("stacktrace", ExceptionUtils.getFullStackTrace(throwable));
 		  error(ExceptionUtils.getFullStackTrace(throwable));
-		  Result resultToReturn= internalServerError(result);
+		  SimpleResult resultToReturn= internalServerError(result);
 		  try {
 			  if (Logger.isDebugEnabled()) Logger.debug("Global.onBadRequest:\n  + result: \n" + result.toString() + "\n  --> Body:\n" + new String(JavaResultExtractor.getBody(resultToReturn),"UTF-8"));
 		  } finally{
-			  return resultToReturn;
+			  return F.Promise.pure(resultToReturn);
 		  }
 	  }
 
 
 	@Override
 	public <T extends EssentialFilter> Class<T>[] filters() {
-		
 		return new Class[]{com.baasbox.filters.LoggingFilter.class};
 	}
 

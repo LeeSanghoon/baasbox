@@ -9,10 +9,9 @@ import static play.test.Helpers.routeAndCall;
 import static play.test.Helpers.running;
 
 import org.apache.commons.lang.StringUtils;
-import org.codehaus.jackson.JsonNode;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.Test;
 
-import play.api.mvc.ChunkedResult;
 import play.libs.Json;
 import play.mvc.Http.Status;
 import play.mvc.Result;
