@@ -25,9 +25,9 @@ public class IosCertificateHandler implements IPropertyChangeCallback{
 			return;
 		}
 		String folder = BBConfiguration.getPushCertificateFolder();
-		File f = new File(Play.application().path().getAbsolutePath()+sep+folder);
+		File f = new File(folder);
 		if(!f.exists()){
-			f.mkdir();
+			f.mkdirs();
 		}
 		ConfigurationFileContainer newValue=null;
 		ConfigurationFileContainer currentValue=null;
@@ -47,7 +47,7 @@ public class IosCertificateHandler implements IPropertyChangeCallback{
 				}
 			}
 			if(currentValue!=null){
-				File oldFile =  new File(Play.application().path().getAbsolutePath()+sep+folder+sep+currentValue.getName());
+				File oldFile =  new File(folder+sep+currentValue.getName());
 				if(oldFile.exists()){
 					try{
 						FileUtils.forceDelete(oldFile);
@@ -57,7 +57,7 @@ public class IosCertificateHandler implements IPropertyChangeCallback{
 				}
 			}
 			if(newValue!=null){
-				File newFile =  new File(Play.application().path().getAbsolutePath()+sep+folder+sep+newValue.getName());
+				File newFile =  new File(folder+sep+newValue.getName());
 				try{
 					if(!newFile.exists()){
 						newFile.createNewFile();
@@ -85,15 +85,15 @@ public class IosCertificateHandler implements IPropertyChangeCallback{
 
 		public static void init(){
 			String folder = BBConfiguration.getPushCertificateFolder();
-			File f = new File(Play.application().path().getAbsolutePath()+sep+folder);
+			File f = new File(folder);
 			if(!f.exists()){
-				f.mkdir();
+				f.mkdirs();
 			}
 			ConfigurationFileContainer prod = Push.PRODUCTION_IOS_CERTIFICATE.getValueAsFileContainer();
 			ConfigurationFileContainer sandbox = Push.SANDBOX_IOS_CERTIFICATE.getValueAsFileContainer();
 			if(prod!=null){
 				if (Logger.isDebugEnabled()) Logger.debug("Creating production certificate:"+prod.getName());
-				File prodCertificate =  new File(Play.application().path().getAbsolutePath()+sep+folder+sep+prod.getName());
+				File prodCertificate =  new File(folder+sep+prod.getName());
 				if(!prodCertificate.exists()){
 					try{
 						prodCertificate.createNewFile();
@@ -108,7 +108,7 @@ public class IosCertificateHandler implements IPropertyChangeCallback{
 			}
 			if(sandbox!=null){
 				if (Logger.isDebugEnabled()) Logger.debug("Creating sandbox certificate:"+sandbox.getName());
-				File sandboxCertificate =  new File(Play.application().path().getAbsolutePath()+sep+folder+sep+sandbox.getName());
+				File sandboxCertificate =  new File(folder+sep+sandbox.getName());
 				if(!sandboxCertificate.exists()){
 					try{
 						sandboxCertificate.createNewFile();
@@ -125,7 +125,7 @@ public class IosCertificateHandler implements IPropertyChangeCallback{
 		}
 
 		public static File getCertificate(String name) {
-			return new File(Play.application().path().getAbsolutePath()+sep+BBConfiguration.getPushCertificateFolder()+sep+name);
+			return new File(BBConfiguration.getPushCertificateFolder()+sep+name);
 		}
 
 
